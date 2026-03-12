@@ -2,7 +2,7 @@ import numpy as np
 import scipy.stats as sps
 import seapipy.lattice_class as lattice_class
 import seapipy.surface_evolver as surface_evolver
-
+import seapipy.surface_evolver_vm as surface_evolver_vm
 
 class ExampleTissues:
     """
@@ -53,12 +53,25 @@ class ExampleTissues:
         :return: Surface Evolver object that will be written to disk
         :rtype: surface_evolver.SurfaceEvolver
         """
-        se_object = surface_evolver.SurfaceEvolver(self.vertices,
-                                                        self.edges,
-                                                        self.cells,
-                                                        self.densities,
-                                                        self.volumes,
-                                                        polygonal=False)
+        
+        is_polygonal = False
+        if self.parameters.get("is_polygonal") == True:
+            is_polygonal = True
+        
+        if self.parameters.get("se_type") == "vm":
+            se_object = surface_evolver_vm.SurfaceEvolverVM(self.vertices,
+                                                            self.edges,
+                                                            self.cells,
+                                                            self.densities,
+                                                            self.volumes,
+                                                            is_polygonal)
+        else:
+            se_object = surface_evolver.SurfaceEvolver(self.vertices,
+                                                       self.edges,
+                                                       self.cells,
+                                                       self.densities,
+                                                       self.volumes,
+                                                       is_polygonal)
 
         return se_object
 

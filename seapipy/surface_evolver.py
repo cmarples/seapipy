@@ -11,7 +11,7 @@ class SurfaceEvolver:
     :type vertices: dict
     :param edges: Edges in the tesselation
     :type edges: dict
-    :param vertices: Cells in the tesselation
+    :param cells: Cells in the tesselation
     :type cells: dict
     :param density_values: Initial line tensions for the edges
     :type density_values: dict

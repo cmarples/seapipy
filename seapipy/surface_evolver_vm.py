@@ -32,22 +32,34 @@ class SurfaceEvolverVM(surface_evolver.SurfaceEvolver):
             self.fe_file.write(f"PARAMETER target_area_{i} = {round(self.volume_values[k], 3)}\n")
             self.fe_file.write(f"PARAMETER target_perimeter_{i} = {round(0, 3)}\n")
             self.fe_file.write(f"QUANTITY cell_{i}_energy ENERGY FUNCTION\n")
-            self.fe_file.write(f"    area_elasticity * (area_{i} - target_area_{i})^2 +\n")
-            self.fe_file.write(f"    perimeter_contractility * (perimeter_{i} - target_perimeter_{i})^2\n")
+            self.fe_file.write(f"    0.5 * area_elasticity * (area_{i}.value - target_area_{i})^2 +\n")
+            self.fe_file.write(f"    0.5 * perimeter_contractility * (perimeter_{i}.value - target_perimeter_{i})^2\n")
             self.fe_file.write("\n")
         
         # Vertices
         self.fe_file.write("vertices \n")
         for k, v in self.vertices.items():
             self.fe_file.write(f"{k}   {round(v[0], 3)} {round(v[1], 3)}\n")
-            
-        # Edges (with initial line tensions)
+        
+        # Build edge to cells mapping
+        edge_to_cells = {}
+        for cell_id, edge_list in self.cells.items():
+            for edge_id in edge_list:
+                absolute_edge_id = abs(edge_id)
+                if absolute_edge_id not in edge_to_cells:
+                    edge_to_cells[absolute_edge_id] = []
+                edge_to_cells[absolute_edge_id].append(abs(cell_id))
+        
+        # Edges (with initial line tensions and references to adjacent cell areas and perimeters)
         self.fe_file.write("\n")
         self.fe_file.write("edges \n")
         for k, v in self.edges.items():
             lambda_val = self.density_values[k]
-            self.fe_file.write(f"{abs(k)}   {v[0]}   {v[1]}   density {lambda_val}\n")
-        
+            self.fe_file.write(f"{abs(k)}   {v[0]}   {v[1]}   density {lambda_val}   ")
+            for cell_id in edge_to_cells[abs(k)]:
+                self.fe_file.write(f"perimeter_{cell_id}   area_{cell_id}   ")
+            self.fe_file.write("\n")
+            
         # Faces
         self.fe_file.write("\n")
         self.fe_file.write("faces \n")
